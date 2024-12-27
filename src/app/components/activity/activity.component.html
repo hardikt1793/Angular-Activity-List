@@ -1,0 +1,90 @@
+<div class="timeline-event">
+  <div class="timeline-event-content" [class.focused]="isInputFocused"> 
+    <div class="timeline-event-line"></div>
+    <div class="timeline-event-date"></div>
+    <div class="timeline-event-icon">
+      <i class="fas fa-list"></i>
+    </div>
+  </div>
+  <div class="timeline-container form-container">
+    <div class="timeline-event-details-container">
+      <div class="timeline-event-details">
+        <form [formGroup]="messageForm" (ngSubmit)="onSubmit()">
+          <p class="timeline-event-title">
+            <textarea
+              class="text-input"
+              id="message"
+              formControlName="message"
+              (focus)="isInputFocused = true"
+              [class.focused]="isInputFocused"
+              placeholder="Add a note about Milton Romaguera.."
+              ></textarea>
+          </p>
+          <span
+            class="error"
+            *ngIf="
+              messageForm.controls['message'].invalid &&
+              messageForm.controls['message'].touched
+            "
+            >Message is required</span>
+          <div
+            class="timeline-event-description"
+            *ngIf="isInputFocused || messageForm.controls['message'].value"
+          >
+            <div class="icons-group">
+              @for(iconType of getNoteKeys; track iconType) {
+              <button
+                class="icon"
+                type="button"
+                title="Delete"
+                (click)="selectIcon(iconType)"
+                [class.selected]="selectedActivity === iconType"
+              >
+                <i
+                  [class]="activityTypeMappingOptions[iconType].icon"
+                  [class.selected]="selectedActivity === iconType"
+                ></i>
+              </button>
+              }
+            </div>
+            <button class="submit-btn" type="submit">Submit</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="timeline">
+  @for(activity of activityList; track activity.id) {
+  <div class="timeline-event">
+    <div class="timeline-event-content">
+      <div class="timeline-event-line"></div>
+      <div class="timeline-event-date">
+        {{ activity.timestamp | timeAgo }}
+      </div>
+      <div class="timeline-event-icon">
+        <i [class]="activityTypeMappingOptions[activity?.type!].icon"></i>
+      </div>
+    </div>
+    <div class="timeline-container">
+      <div class="timeline-event-details-container">
+        <div class="timeline-event-details">
+          <p class="timeline-event-title">
+            <span class="user-text">{{ activity?.user }}</span>
+            {{ isPastOrPresent(activity.timestamp) }}
+            {{ activityTypeMappingOptions[activity?.type!].title }}
+            <span class="user-text">Milton Romaguera</span>
+          </p>
+          <p class="timeline-event-description">
+            {{ activity?.note }}
+          </p>
+        </div>
+        <div class="remove-btn-container" (click)="removeActivity(activity.id)">
+          <i class="fa-solid fa-trash"></i>
+        </div>
+      </div>
+    </div>
+  </div>
+  }
+</div>
