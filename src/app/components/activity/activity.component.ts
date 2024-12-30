@@ -1,19 +1,29 @@
-import { CommonModule } from '@angular/common';
-import { Component, OnInit } from '@angular/core';
-import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
-import { Activity, ActivityType } from '../../core/models/activity.model';
-import { ActivityService } from '../../core/services/activity.service';
-import { TimeAgoPipe } from '../../core/pipes/time-ago.pipe';
+import { CommonModule } from "@angular/common";
+import { Component, OnInit } from "@angular/core";
+import {
+  FormBuilder,
+  FormGroup,
+  ReactiveFormsModule,
+  Validators,
+} from "@angular/forms";
+import { Activity, ActivityType } from "../../core/models/activity.model";
+import { ActivityService } from "../../core/services/activity.service";
+import { ActivityItemComponent } from "../activity-item/activity-item.component";
+import { TimelineItemComponent } from "../timeline-item/timeline-item.component";
 
 @Component({
-  selector: 'app-activity',
+  selector: "app-activity",
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, TimeAgoPipe],
-  templateUrl: './activity.component.html',
-  styleUrl: './activity.component.scss'
+  imports: [
+    CommonModule,
+    ReactiveFormsModule,
+    ActivityItemComponent,
+    TimelineItemComponent,
+  ],
+  templateUrl: "./activity.component.html",
+  styleUrl: "./activity.component.scss",
 })
 export class ActivityComponent implements OnInit {
-
   // form group to bind the form
   messageForm!: FormGroup;
 
@@ -21,46 +31,27 @@ export class ActivityComponent implements OnInit {
   activityList: Activity[] = [];
 
   // to hold the selected activity
-  selectedActivity = 'Message';
+  selectedActivity = "Message";
 
   // to hold input focus value
   isInputFocused = false;
 
-  // activity type mapping 
-  activityTypeMappingOptions: ActivityType = {
-    Message: {
-      title: "added a note to",
-      icon: "fas fa-message",
-    },
-    Phone: {
-      title: "a call with",
-      icon: "fas fa-phone",
-    },
-    Coffee: {
-      title: "a coffee with",
-      icon: "fas fa-coffee",
-    },
-    Beer: {
-      title: "a party with",
-      icon: "fas fa-beer",
-    },
-    "Meeting Note": {
-      title: "a meeting with",
-      icon: "fas fa-user",
-    },
-  };
+  // activity type mapping
+  activityTypeMappingOptions!: ActivityType;
 
+  // to check whether the submit action is still in progress
+  isSubmitting = false;
 
   constructor(
     private fb: FormBuilder,
-    private activityService: ActivityService,
-  ) {
-
-  }
+    private activityService: ActivityService
+  ) {}
 
   ngOnInit(): void {
+    this.activityTypeMappingOptions =
+      this.activityService.getActivityTypeMappingOptions();
     this.messageForm = this.fb.group({
-      message: ['', [Validators.required]], 
+      message: ["", [Validators.required]],
     });
     this.getActivityList();
   }
@@ -73,7 +64,7 @@ export class ActivityComponent implements OnInit {
   }
 
   /**
-   * To hold the selected activity. 
+   * To hold the selected activity.
    * @param noteType - the type of activity selected.
    */
   selectIcon(noteType: string): void {
@@ -82,29 +73,39 @@ export class ActivityComponent implements OnInit {
 
   /**
    * To create new activity.
-   * @returns 
+   * @returns
    */
   onSubmit(): void {
+    if (this.isSubmitting) return;
+
+    this.isSubmitting = true;
+
     if (this.messageForm.invalid) {
       this.messageForm.markAllAsTouched();
+      this.isSubmitting = false;
       return;
     }
 
     const activityPayload: Activity = {
       id: Date.now(),
-      user: 'You',
+      user: "You",
       timestamp: new Date(),
       type: this.selectedActivity,
       note: this.messageForm.value.message.trim(),
     };
 
     setTimeout(() => {
-      this.activityService.addNewActivity(activityPayload);
-      this.messageForm.reset();
-      this.selectedActivity = 'Message';
-      this.getActivityList();
-    },1000);
-    
+      try {
+        this.activityService.addNewActivity(activityPayload);
+        this.messageForm.reset();
+        this.selectedActivity = "Message";
+        this.getActivityList();
+      } catch (error) {
+        console.error("Error saving activity:", error);
+      } finally {
+        this.isSubmitting = false;
+      }
+    }, 1000);
   }
 
   /**
@@ -115,7 +116,7 @@ export class ActivityComponent implements OnInit {
   }
 
   /**
-   * Remove the Activity by id. 
+   * Remove the Activity by id.
    * @param id - id of the activity to be removed
    */
   removeActivity(id: number) {
@@ -126,24 +127,4 @@ export class ActivityComponent implements OnInit {
       this.getActivityList();
     }
   }
-
-/**
- * To get the 'had' or 'have' text based on the time of the activity created
- * @param eventDate - date to checked for. 
- * @returns string
- */
-isPastOrPresent(eventDate: Date): string {
-    const today = new Date();
-    // Directly create a Date object from the input string
-    const eventDateObj = new Date(eventDate);
-
-    // Get the time difference in milliseconds
-    const diffTime = today.getTime() - eventDateObj.getTime();
-
-    // Convert milliseconds to days
-    const diffDays = Math.floor(diffTime / (1000 * 3600 * 24));
-
-    return diffDays > 0 ? `had ` : 'have ';
-  }
-
 }

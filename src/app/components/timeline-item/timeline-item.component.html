@@ -1,0 +1,11 @@
+<div class="timeline-item" [class.focused]="isInputFocused">
+  <div class="line"></div>
+  <div class="date">
+    @if(timestamp){
+    {{ timestamp | timeAgo }}
+    }
+  </div>
+  <div class="icon">
+    <i [class]="icon"></i>
+  </div>
+</div>

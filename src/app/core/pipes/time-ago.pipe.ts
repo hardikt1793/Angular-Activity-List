@@ -1,12 +1,12 @@
-import { Pipe, PipeTransform } from '@angular/core';
+import { Pipe, PipeTransform } from "@angular/core";
 
 /**
- * return the time ago based on activity created
+ * Returns the time ago based on activity created.
  */
 @Pipe({
-  name: 'timeAgo',
+  name: "timeAgo",
   standalone: true,
-  pure: false
+  pure: false,
 })
 export class TimeAgoPipe implements PipeTransform {
   transform(value: Date): string {

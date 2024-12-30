@@ -1,0 +1,24 @@
+<div class="activity-item">
+  <app-timeline-item
+    [timestamp]="activity.timestamp"
+    [icon]="activityTypeMappingOptions[activity.type!].icon"
+  ></app-timeline-item>
+  <div class="activity-container">
+    <div class="activity-details">
+      <div class="content">
+        <p class="title">
+          <span class="user-text">{{ activity.user }}</span>
+          {{ isPastOrPresent(activity.timestamp) }}
+          {{ activityTypeMappingOptions[activity.type!].title }}
+          <span class="user-text">Milton Romaguera</span>
+        </p>
+        <p class="description">
+          {{ activity.note }}
+        </p>
+      </div>
+      <div class="actions" (click)="onRemoveActivity(activity.id)">
+        <i class="fa-solid fa-trash"></i>
+      </div>
+    </div>
+  </div>
+</div>
